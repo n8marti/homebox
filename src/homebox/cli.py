@@ -37,8 +37,6 @@ def get_new_wan_ip():
 
     # Toggle APN to get new IP address.
     set_new_ip(window=args.window)
-    # Check bandwidth afterwards.
-    get_download_bw(server_id=args.server_id, threads=args.threads)
 
 
 def main():

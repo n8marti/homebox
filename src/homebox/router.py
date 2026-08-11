@@ -1,4 +1,5 @@
 import logging
+import sys
 from pathlib import Path
 from time import sleep
 
@@ -14,6 +15,7 @@ from selenium.webdriver.support.ui import Select
 
 APNS = ("MTN_internet", "MTN_mobile")
 PROTOCOL = "http"
+SECRETS_DIRS = [".", "~"]
 SERVER_IP = "192.168.1.1"
 SERVER_URL = f"{PROTOCOL}://{SERVER_IP}"
 logger = logging.getLogger()
@@ -40,6 +42,15 @@ def ensure_mbox_dismissed(driver):
         close_mbox(driver)
         sleep(0.1)
         ol_display = get_style_data(ol).get("display")
+
+
+def get_homebox_txt():
+    """Find homebox.txt, which contains the login password."""
+    for d in SECRETS_DIRS:
+        p = Path(d).resolve()
+        f = p / "homebox.txt"
+        if f.is_file():
+            return f
 
 
 def get_style_data(elem):
@@ -100,7 +111,11 @@ def login_admin(driver):
     username_field = driver.find_element(By.ID, "tbarouter_username")
     username_field.send_keys("admin")
     password_field = driver.find_element(By.ID, "tbarouter_password")
-    password_field.send_keys(Path("secret.txt").read_text().rstrip('\n'))
+    homebox_txt = get_homebox_txt()
+    if homebox_txt is None:
+        logger.critical("homebox.txt not found; can't login!")
+        sys.exit(1)
+    password_field.send_keys(homebox_txt.read_text().rstrip('\n'))
     driver.execute_script("Login();")
 
 

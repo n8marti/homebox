@@ -16,6 +16,6 @@ requires-python = ">=3.12"
 dynamic = ["version"]
 
 [project.scripts]
-get-bandwidth = "homebox.cli:get_bandwidth"
-toggle-apn = "homebox.cli:toggle_apn"
-homebox-net-check = "homebox.cli:main"
+homebox-get-bandwidth = "homebox.cli:get_bandwidth"
+homebox-toggle-apn = "homebox.cli:toggle_apn"
+homebox-verify-connection = "homebox.cli:main"

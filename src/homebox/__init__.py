@@ -1,2 +1,2 @@
-__version__ = "0.3.0"
+__version__ = "0.4.0"
 BANDWIDTH_THRESHOLD_DEFAULT = 200000

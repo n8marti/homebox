@@ -1,9 +1,13 @@
+import logging
+import sys
+
 from speedtest.client import SpeedtestClient
 from speedtest.engine.config import ConfigFetchError, get_config
 from speedtest.models import RunContext
 
 DOWNLOAD_THREADS_DEFAULT = 1
 SERVER_ID_DEFAULT = 0
+logger = logging.getLogger()
 
 
 def as_str(server) -> str:
@@ -18,8 +22,8 @@ def get_download_bw(
     try:
         ctx.api_config = get_config()
     except ConfigFetchError:
-        print("Failed to fetch config.")
-        return -1
+        logger.critical("Failed to fetch config.")
+        sys.exit(1)
 
     ctx.threads = threads  # set manually b/c not getting from args
     client = SpeedtestClient()
@@ -35,13 +39,12 @@ def get_download_bw(
 
     # Determine nearest server, if needed.
     if server is None:
-        print("Selecting nearest Speedtest server...")
+        logger.info("Selecting nearest Speedtest server...")
         server, _ = client.select_best_server(target_servers)
         # print("Selecting first listed Speedtest server.")
         # server = target_servers[0]
 
-    print(f"Testing download speed from \"{as_str(server)}\"")
+    logger.info(f"Testing download speed from \"{as_str(server)}\"")
     _, bw = client.download(server, ctx)
     bw = round(bw)
-    print(f"DL bandwidth: {bw} bps")
     return bw

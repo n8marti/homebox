@@ -21,17 +21,8 @@ SERVER_URL = f"{PROTOCOL}://{SERVER_IP}"
 logger = logging.getLogger()
 
 
-class ChromiumSnap(webdriver.Chrome):
-    """Preconfigure Chromium Snap webdriver for repeated use."""
-
-    def __init__(self, window=False, **kwargs):
-        options = Options()
-        if not window:
-            options.add_argument("--headless=new")
-        options.add_argument("--no-sandbox")
-        options.add_argument("--disable-dev-shm-usage")
-        service = Service(executable_path="/snap/bin/chromium.chromedriver")
-        super().__init__(options=options, service=service)
+class HomeboxMixin:
+    """Browser-agnostic functionality mix-in."""
 
     def load_apn_management(self):
         """Load APN Management page from Home."""
@@ -42,8 +33,12 @@ class ChromiumSnap(webdriver.Chrome):
         """Load `index.html` page."""
         try:
             self.get(f"{SERVER_URL}/index.html")
-        except WebDriverException:
-            logger.warning("Web page unavailable.")
+        except WebDriverException as e:
+            logger.critical("Web page unavailable.")
+            logger.critical(e)
+        # FIXME: Something is requiring a wait here when using Epiphany.
+        # self._wait_for_id("tbarouter_username")
+        # sleep(5)
 
     def load_lte_wan_page(self):
         """Open LTE WAN page."""
@@ -171,10 +166,36 @@ class ChromiumSnap(webdriver.Chrome):
         return elem
 
 
+class ChromiumSnap(webdriver.Chrome, HomeboxMixin):
+    """Preconfigure Chromium Snap webdriver."""
+
+    def __init__(self, window=False, **kwargs):
+        options = Options()
+        if not window:
+            options.add_argument("--headless=new")
+        options.add_argument("--no-sandbox")
+        options.add_argument("--disable-dev-shm-usage")
+        service = Service(executable_path="/snap/bin/chromium.chromedriver")
+        super().__init__(options=options, service=service)
+
+
+class Epiphany(webdriver.WebKitGTK, HomeboxMixin):
+    """Preconfigure Epiphany (GNOME Web) webdriver."""
+
+    def __init__(self, window=False, **kwargs):
+        options = webdriver.WebKitGTKOptions()
+        options.binary_location = "/usr/bin/epiphany"
+        options.add_argument("--automation-mode")
+        options.set_capability("browserName", "Epiphany")
+        super().__init__(options=options)
+
+
+
 def get_wan_ip(window=False):
     """Return the WAN IP address from the MTN Homebox.
     This is a comprehensive function that assumes the user is not logged in.
     """
+    # with Epiphany(window=window) as wd:
     with ChromiumSnap(window=window) as wd:
         wd.login()
         return wd.get_wan_ip()

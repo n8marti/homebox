@@ -106,12 +106,19 @@ class HomeboxMixin:
         self.execute_script("CloseDlg();")
 
     def _ensure_mbox_dismissed(self):
+        timeout = 1 # seconds
         # Get overlay.
         ol = self._wait_for_id("ol")
-        # Wait for display value to be set.
+        # Wait for display value to be set. Timeout is needed b/c the display
+        # value won't get set at all if there are no Notification popups.
         ol_display = self._style_data(ol).get("display")
+        elapsed = 0
+        dt = 0.1
         while ol_display is None:
-            sleep(0.1)
+            sleep(dt)
+            elapsed += dt
+            if elapsed >= timeout:
+                break
             ol_display = self._style_data(ol).get("display")
         # Close mbox if overlay is blocking.
         while ol_display == "block":

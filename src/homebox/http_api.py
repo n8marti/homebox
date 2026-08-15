@@ -4,10 +4,10 @@ import random
 import sys
 import time
 import xml.etree.ElementTree as ET
+from dataclasses import dataclass
 from pathlib import Path
 
 import requests
-from dataclasses import dataclass
 from dict2xml import DataSorter, dict2xml
 
 from . import APNS, SECRETS_DIRS, SERVER_URL

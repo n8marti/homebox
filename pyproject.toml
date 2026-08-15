@@ -8,6 +8,7 @@ description = "Manipulate MTN Homebox router"
 readme = "README.md"
 authors = [{name = "Nate Marti"}]
 dependencies = [
+    "dict2xml",
     "requests",
     "speedtest-cli-ng",
 ]

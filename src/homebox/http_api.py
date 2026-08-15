@@ -15,21 +15,6 @@ from . import APNS, SECRETS_DIRS, SERVER_URL
 logger = logging.getLogger()
 
 
-def homebox_txt():
-    """Find homebox.txt, which contains the login password."""
-    for d in SECRETS_DIRS:
-        p = Path(d).resolve()
-        f = p / "homebox.txt"
-        if f.is_file():
-            return f
-
-
-homebox_txt = homebox_txt()
-if homebox_txt is None:
-    logger.critical("homebox.txt not found; can't login!")
-    sys.exit(1)
-
-
 @dataclass
 class AuthData:
     """Data that is needed for authentication."""
@@ -37,16 +22,34 @@ class AuthData:
     authcnonce: str = None
     authcount: str = None
     ncount: int = 0
+    _passwd: str = None
     # constants
     authqop: str = None
     authrealm: str = None
     nonce: str = None
     username: str = "admin"
-    passwd: str = homebox_txt.read_text().rstrip("\n")
 
     @property
     def ha1(self):
         return self._md5(f"{self.username}:{self.authrealm}:{self.passwd}")
+
+    @property
+    def passwd(self):
+        if self._passwd is None:
+            # Find homebox.txt, which contains the login password.
+            homebox_txt = None
+            for d in SECRETS_DIRS:
+                p = Path(d).resolve()
+                f = p / "homebox.txt"
+                if f.is_file():
+                    homebox_txt = f
+
+            if homebox_txt is None:
+                logger.critical("homebox.txt not found; can't login!")
+                sys.exit(1)
+
+            self._passwd = homebox_txt.read_text().rstrip("\n")
+        return self._passwd
 
     def digest_res(self, request_type, ncount=None):
         salt = f"{random.randint(1, 100001)}{time.time()}"
@@ -138,6 +141,10 @@ class HomeboxSession(requests.Session):
         return val
 
     @property
+    def wan_ip_and_apn(self):
+        return f"{self.wan_ip} via {self.active_apn_profile}"
+
+    @property
     def wan_ip(self):
         return self.xml_tag_value(self.post_xml("cm", "get_link_context"), "ipv4_ip")
 
@@ -200,7 +207,7 @@ class HomeboxSession(requests.Session):
     def toggle_apn(self, desired_apn=None):
         current_apn = self.active_apn_profile
         current_wan_ip = self.wan_ip
-        logger.info(f"Current APN: {current_apn} ({current_wan_ip})")
+        logger.info(f"Current WAN IP: {current_wan_ip} via {current_apn}")
         profile_names = [p for p in self.apn_profile_names]
 
         # Toggle APN.
@@ -223,7 +230,7 @@ class HomeboxSession(requests.Session):
         # I don't think on this Homebox there will ever be more than 1 WAN, but
         # this is a failsafe, just in case.
         if self.apn_number > 1:
-            logger.critical("More than 1 APN is active; must edit manually.")
+            logger.critical("More than 1 APN is active; APN must be changed manually.")
             return None
 
         control_map = {
@@ -331,21 +338,12 @@ class HomeboxSession(requests.Session):
             ct += 1
 
 
-def get_wan_ip():
+def get_wan_ip(apn=None, new=False):
     with HomeboxSession() as session:
         if not session.logged_in:
             logger.critical("Login unsuccessful.")
             return False
 
-        return session.wan_ip
-
-
-def get_new_wan_ip(apn=None):
-    with HomeboxSession() as session:
-        if not session.logged_in:
-            logger.critical("Login unsuccessful.")
-            return False
-
-        session.toggle_apn(desired_apn=apn)
-
-        return session.wan_ip
+        if new is True:
+            session.toggle_apn(desired_apn=apn)
+        return session.wan_ip_and_apn

@@ -17,10 +17,7 @@ requires-python = ">=3.12"
 dynamic = ["version"]
 
 [project.scripts]
-homebox-bandwidth = "homebox.cli:print_bandwidth"
-homebox-wan-ip = "homebox.cli:print_wan_ip"
-homebox-new-wan-ip = "homebox.cli:set_new_wan_ip"
-homebox-verify-connection = "homebox.cli:main"
+homeboxctl = "homebox.cli:main"
 
 [tool.ruff.lint]
 ignore = ["I001"]

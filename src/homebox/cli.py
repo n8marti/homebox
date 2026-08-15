@@ -1,94 +1,51 @@
 
 import argparse
 import logging
-import sys
 
-from . import BANDWIDTH_THRESHOLD_DEFAULT, http_api
+from . import __version__, http_api
 from .bandwidth import DOWNLOAD_THREADS_DEFAULT, get_download_bw
 
 
-def print_bandwidth():
-    parser = argparse.ArgumentParser(prog="homebox-bandwidth")
-    parser.add_argument("-i", "--server-id", type=int, default=0, help="set explicit speedtest server ID")
-    parser.add_argument("-t", "--threads", type=int, default=DOWNLOAD_THREADS_DEFAULT, help="override default speedtest download threads")
-    parser.add_argument("-v", "--verbose", action="store_true", help="use verbose logging")
-    args = parser.parse_args()
-
-    # Set up logging.
-    level = logging.INFO
-    if args.verbose:
-        level = logging.DEBUG
-    logging.basicConfig(format="{levelname}: {message}", style="{", level=level)
+def print_bandwidth(args):
     print(get_download_bw(server_id=args.server_id, threads=args.threads))
 
 
-def set_new_wan_ip():
-    parser = argparse.ArgumentParser(prog="homebox-new-wan-ip")
-    parser.add_argument("-a", "--apn", help="specify which APN profile to apply")
-    parser.add_argument("-v", "--verbose", action="store_true", help="use verbose logging")
-    args = parser.parse_args()
-
-    # Set up logging.
-    level = logging.INFO
-    if args.verbose:
-        level = logging.DEBUG
-    logging.basicConfig(format="{levelname}: {message}", style="{", level=level)
-
-    # Toggle APN to get new IP address.
-    print(http_api.get_new_wan_ip(apn=args.apn))
-
-
-def print_wan_ip():
-    parser = argparse.ArgumentParser(prog="homebox-wan-ip")
-    parser.add_argument("-v", "--verbose", action="store_true", help="use verbose logging")
-    args = parser.parse_args()
-
-    # Set up logging.
-    level = logging.INFO
-    if args.verbose:
-        level = logging.DEBUG
-    logging.basicConfig(format="{levelname}: {message}", style="{", level=level)
-
-    # Show current WAN IP address.
+def print_wan_ip(args):  # args is needed for compatibility with other funcs
     print(http_api.get_wan_ip())
 
 
+def set_new_wan_ip(args):
+    print(http_api.get_wan_ip(apn=args.apn_profile, new=True))
+
+
 def main():
-    parser = argparse.ArgumentParser(prog="homebox-verify-connection")
-    parser.add_argument("-n", "--new-ip", action="store_true", help="set new IP address and exit")
-    parser.add_argument("-s", "--speedtest", action="store_true", help="run speedtest and exit")
-    parser.add_argument("-i", "--server-id", type=int, default=0, help="set explicit speedtest server ID")
-    parser.add_argument("-m", "--minimum-bandwidth", type=int, default=BANDWIDTH_THRESHOLD_DEFAULT)
-    parser.add_argument("-t", "--threads", type=int, default=DOWNLOAD_THREADS_DEFAULT, help="override default speedtest download threads")
-    parser.add_argument("-v", "--verbose", action="store_true", help="use verbose logging")
+    # Handle arguments.
+    parser = argparse.ArgumentParser(prog="homeboxctl")
+    parser.add_argument("--version", action="version", version=f"%(prog)s {__version__}")
+    subparsers = parser.add_subparsers()
+    # Define bandwidth subcommand.
+    bw_parser = subparsers.add_parser("bandwidth", help="get current download bandwidth")
+    bw_parser.add_argument("-i", "--server-id", type=int, default=0, help="set explicit speedtest server ID")
+    bw_parser.add_argument("-t", "--threads", type=int, default=DOWNLOAD_THREADS_DEFAULT, help="override default speedtest download threads")
+    bw_parser.add_argument("-v", "--verbose", action="store_true", help="use verbose logging")
+    bw_parser.set_defaults(func=print_bandwidth)
+    # Define wan-ip subcommand.
+    ip_parser = subparsers.add_parser("wan-ip", help="get WAN IP address")
+    ip_parser.add_argument("-v", "--verbose", action="store_true", help="use verbose logging")
+    ip_parser.set_defaults(func=print_wan_ip)
+    # Define new-wan-ip subcommand.
+    newip_parser = subparsers.add_parser("new-wan-ip", help="reset WAN IP address")
+    newip_parser.add_argument("-a", "--apn-profile", help="specify which APN profile to apply")
+    newip_parser.add_argument("-v", "--verbose", action="store_true", help="use verbose logging")
+    newip_parser.set_defaults(func=set_new_wan_ip)
+    # Parse args.
     args = parser.parse_args()
 
     # Set up logging.
-    level = logging.INFO
+    log_level = logging.INFO
     if args.verbose:
-        level = logging.DEBUG
-    logging.basicConfig(format="{levelname}: {message}", style="{", level=level)
-    # print(logging.root.manager.loggerDict)
-    logger = logging.getLogger()
+        log_level = logging.DEBUG
+    logging.basicConfig(format="{levelname}: {message}", style="{", level=log_level)
 
-    if args.new_ip:
-        # Toggle APN to get new IP address.
-        set_new_wan_ip()
-        # Check bandwidth afterwards.
-        get_download_bw(server_id=args.server_id, threads=args.threads)
-        sys.exit()
-
-    # Get current download bandwidth.
-    bw = get_download_bw(server_id=args.server_id, threads=args.threads)
-
-    if args.speedtest:
-        # Speedtest done; don't consider new IP address.
-        sys.exit()
-
-    # Consider new IP address.
-    if bw > args.minimum_bandwidth:
-        logger.info("Bandwidth is sufficient.")
-        sys.exit()
-
-    # Set new IP address.
-    set_new_wan_ip()
+    # Run subcommand.
+    args.func(args)

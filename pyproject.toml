@@ -8,7 +8,7 @@ description = "Manipulate MTN Homebox router"
 readme = "README.md"
 authors = [{name = "Nate Marti"}]
 dependencies = [
-    "selenium",
+    "requests",
     "speedtest-cli-ng",
 ]
 license = "MIT"
@@ -20,3 +20,6 @@ homebox-bandwidth = "homebox.cli:print_bandwidth"
 homebox-wan-ip = "homebox.cli:print_wan_ip"
 homebox-new-wan-ip = "homebox.cli:set_new_wan_ip"
 homebox-verify-connection = "homebox.cli:main"
+
+[tool.ruff.lint]
+ignore = ["I001"]

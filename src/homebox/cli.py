@@ -3,9 +3,8 @@ import argparse
 import logging
 import sys
 
-from . import BANDWIDTH_THRESHOLD_DEFAULT
+from . import BANDWIDTH_THRESHOLD_DEFAULT, http_api
 from .bandwidth import DOWNLOAD_THREADS_DEFAULT, get_download_bw
-from .router import get_wan_ip, set_new_ip
 
 
 def print_bandwidth():
@@ -25,8 +24,8 @@ def print_bandwidth():
 
 def set_new_wan_ip():
     parser = argparse.ArgumentParser(prog="homebox-new-wan-ip")
+    parser.add_argument("-a", "--apn", help="specify which APN profile to apply")
     parser.add_argument("-v", "--verbose", action="store_true", help="use verbose logging")
-    parser.add_argument("-w", "--window", action="store_true", help="show browser window")
     args = parser.parse_args()
 
     # Set up logging.
@@ -36,13 +35,12 @@ def set_new_wan_ip():
     logging.basicConfig(format="{levelname}: {message}", style="{", level=level)
 
     # Toggle APN to get new IP address.
-    print(set_new_ip(window=args.window))
+    print(http_api.get_new_wan_ip(apn=args.apn))
 
 
 def print_wan_ip():
-    parser = argparse.ArgumentParser(prog="homebox-new-wan-ip")
+    parser = argparse.ArgumentParser(prog="homebox-wan-ip")
     parser.add_argument("-v", "--verbose", action="store_true", help="use verbose logging")
-    parser.add_argument("-w", "--window", action="store_true", help="show browser window")
     args = parser.parse_args()
 
     # Set up logging.
@@ -52,7 +50,7 @@ def print_wan_ip():
     logging.basicConfig(format="{levelname}: {message}", style="{", level=level)
 
     # Show current WAN IP address.
-    print(get_wan_ip(window=args.window))
+    print(http_api.get_wan_ip())
 
 
 def main():
@@ -63,7 +61,6 @@ def main():
     parser.add_argument("-m", "--minimum-bandwidth", type=int, default=BANDWIDTH_THRESHOLD_DEFAULT)
     parser.add_argument("-t", "--threads", type=int, default=DOWNLOAD_THREADS_DEFAULT, help="override default speedtest download threads")
     parser.add_argument("-v", "--verbose", action="store_true", help="use verbose logging")
-    parser.add_argument("-w", "--window", action="store_true", help="show browser window")
     args = parser.parse_args()
 
     # Set up logging.
@@ -76,7 +73,7 @@ def main():
 
     if args.new_ip:
         # Toggle APN to get new IP address.
-        set_new_ip(window=args.window)
+        set_new_wan_ip()
         # Check bandwidth afterwards.
         get_download_bw(server_id=args.server_id, threads=args.threads)
         sys.exit()
@@ -94,4 +91,4 @@ def main():
         sys.exit()
 
     # Set new IP address.
-    set_new_ip()
+    set_new_wan_ip()

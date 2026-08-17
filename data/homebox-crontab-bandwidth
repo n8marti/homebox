@@ -1,3 +1,2 @@
 # Log bandwidth every 15 minutes.
-PATH=/var/www/homebox/env/bin:$PATH
-*/15 * * * * echo "$(date --rfc-3339=seconds): $(homeboxctl bandwidth) ($(homeboxctl wan-ip))" >> /var/www/homebox/bandwidth.log
+*/15 * * * * $HOME/homebox/env/log-bandwidth.sh

@@ -1,4 +1,4 @@
-__version__ = "0.8.1"
+__version__ = "0.8.2"
 APNS = ("MTN_internet", "MTN_mobile")
 BANDWIDTH_THRESHOLD_DEFAULT = 200000
 SECRETS_DIRS = [".", "~"]

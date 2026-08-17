@@ -22,7 +22,7 @@ def index():
 
 @app.route("/log")
 def log():
-    filepath = Path.home() / "bandwidth.log"
+    filepath = Path.home() / "homebox" / "bandwidth.log"
     if filepath.is_file():
         return send_file(str(filepath), mimetype="text/plain")
 

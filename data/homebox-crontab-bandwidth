@@ -1,0 +1,2 @@
+# Log bandwidth every 15 minutes.
+*/15 * * * * echo "$(date --rfc-3339=seconds): $(homeboxctl bandwidth) ($(homeboxctl wan-ip))" >> /var/www/homebox/bandwidth.log

@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Homebox Control</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='main.css') }}">
+</head>
+<body>
+    <div>
+        <h1>Homebox Control</h1>
+        <div class="table">
+            <table>
+                <tr>
+                    <td>
+                        <p>WAN IP address: {{ wan_ip }}</p>
+                    </td>
+                    <td>
+                        <form action="" method="post">
+                            <button type="submit" name="new_wan_ip" value="yes">⟳</button>
+                        </form>
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="2">
+                        <form action="" method="post">
+                            <button type="submit" name="view_log_file" value="yes">View log file</button>
+                        </form>
+                    </td>
+                </tr>
+            </table>
+        </div>
+    </div>
+</body>
+</html>

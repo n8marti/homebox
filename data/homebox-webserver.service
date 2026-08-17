@@ -1,0 +1,16 @@
+[Unit]
+# Ref: https://flask-deployment.com/reference/systemd-basics-for-flask-deployments/
+Description=Homebox Control Webserver
+After=network.target
+
+[Service]
+User=www-data
+Group=www-data
+WorkingDirectory=/var/www/homebox
+EnvironmentFile=/var/www/homebox/env/homebox-webserver.env
+ExecStart=/var/www/homebox/env/bin/gunicorn --workers 2 homebox.web:app
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

@@ -9,6 +9,8 @@ readme = "README.md"
 authors = [{name = "Nate Marti"}]
 dependencies = [
     "dict2xml",
+    "Flask",
+    "gunicorn",
     "requests",
     "speedtest-cli-ng",
 ]
@@ -18,6 +20,9 @@ dynamic = ["version"]
 
 [project.scripts]
 homeboxctl = "homebox.cli:main"
+
+[tool.flit.external-data]
+directory = "data"
 
 [tool.ruff.lint]
 ignore = ["I001"]

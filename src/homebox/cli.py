@@ -4,7 +4,11 @@ import logging
 
 from . import __version__, http_api
 from .bandwidth import DOWNLOAD_THREADS_DEFAULT, get_download_bw
-from .gui import run_gui
+try:
+    from .gui import run_gui
+except ModuleNotFoundError:
+    def run_gui():
+        print("WARNING: Tkinter not installed; GUI not available")
 
 
 def print_bandwidth(args):

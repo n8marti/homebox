@@ -1,7 +1,7 @@
 import logging
 import threading
+
 import tkinter as tk
-# from tkinter import ttk
 from tkinter import font
 
 from . import http_api

@@ -1,5 +1,6 @@
 import hashlib
 import logging
+import os
 import random
 import sys
 import time
@@ -10,7 +11,7 @@ from pathlib import Path
 import requests
 from dict2xml import DataSorter, dict2xml
 
-from . import APNS, SECRETS_DIRS, SERVER_URL
+from . import APNS, SERVER_URL
 
 logger = logging.getLogger()
 
@@ -18,6 +19,8 @@ logger = logging.getLogger()
 @dataclass
 class AuthData:
     """Data that is needed for authentication."""
+
+    SECRETS_DIRS = (".", os.getenv("HOME"))
     # variables
     authcnonce: str = None
     authcount: str = None
@@ -38,11 +41,13 @@ class AuthData:
         if self._passwd is None:
             # Find homebox.txt, which contains the login password.
             homebox_txt = None
-            for d in SECRETS_DIRS:
+            for d in self.SECRETS_DIRS:
                 p = Path(d).resolve()
                 f = p / "homebox.txt"
+                logger.debug(f"Checking for file: {f}")
                 if f.is_file():
                     homebox_txt = f
+                    break
 
             if homebox_txt is None:
                 logger.critical("homebox.txt not found; can't login!")

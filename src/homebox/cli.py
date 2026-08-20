@@ -7,7 +7,7 @@ from .bandwidth import DOWNLOAD_THREADS_DEFAULT, get_download_bw
 try:
     from .gui import run_gui
 except ModuleNotFoundError:
-    def run_gui():
+    def run_gui(args):
         print("WARNING: Tkinter not installed; GUI not available")
 
 

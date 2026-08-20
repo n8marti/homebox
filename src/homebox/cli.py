@@ -4,6 +4,7 @@ import logging
 
 from . import __version__, http_api
 from .bandwidth import DOWNLOAD_THREADS_DEFAULT, get_download_bw
+from .gui import run_gui
 
 
 def print_bandwidth(args):
@@ -38,6 +39,10 @@ def main():
     newip_parser.add_argument("-a", "--apn-profile", help="specify which APN profile to apply")
     newip_parser.add_argument("-v", "--verbose", action="store_true", help="use verbose logging")
     newip_parser.set_defaults(func=set_new_wan_ip)
+    # Define GUI parser.
+    gui_parser = subparsers.add_parser("gui", help="run window app")
+    gui_parser.add_argument("-v", "--verbose", action="store_true", help="use verbose logging")
+    gui_parser.set_defaults(func=run_gui)
     # Parse args.
     args = parser.parse_args()
 

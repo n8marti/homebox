@@ -1,6 +1,7 @@
 
 import argparse
 import logging
+import sys
 
 from . import __version__, http_api
 from .bandwidth import DOWNLOAD_THREADS_DEFAULT, get_download_bw
@@ -49,10 +50,14 @@ def main():
     gui_parser.set_defaults(func=run_gui)
     # Parse args.
     args = parser.parse_args()
+    if not hasattr(args, "func"):
+        # A subcommand is required.
+        parser.print_help()
+        sys.exit(1)
 
     # Set up logging.
     log_level = logging.INFO
-    if args.verbose:
+    if hasattr(args, "verbose") and args.verbose:
         log_level = logging.DEBUG
     logging.basicConfig(format="{levelname}: {message}", style="{", level=log_level)
 
